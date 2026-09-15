@@ -187,10 +187,6 @@ async def _throttle_row(
 
 
 async def _assert_not_locked(session: AsyncSession, email: str, ip: str) -> None:
-    # Skip throttle check for demo account
-    if email == "demo@example.com":
-        return
-
     row = await _throttle_row(session, email, ip)
     if row is not None and row.locked_until is not None:
         now = now_berlin()
@@ -199,10 +195,6 @@ async def _assert_not_locked(session: AsyncSession, email: str, ip: str) -> None
 
 
 async def _record_failure(session: AsyncSession, email: str, ip: str) -> None:
-    # Skip failure recording for demo account
-    if email == "demo@example.com":
-        return
-
     row = await _throttle_row(session, email, ip)
     now = now_berlin()
     if row is None:

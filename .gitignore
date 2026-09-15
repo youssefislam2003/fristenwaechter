@@ -30,3 +30,7 @@ files.zip
 # Internal build/working docs (not published)
 CLAUDE_CODE_PROMPT.md
 BUILD_COMPLETE.md
+
+# Preserved Sep-3 demo stub (not part of the app)
+demo-main.py.bak
+_demo_backup/
