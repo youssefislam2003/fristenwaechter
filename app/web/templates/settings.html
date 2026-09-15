@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Einstellungen — Fristenwächter{% endblock %}
+{% block content %}
+<h1>Einstellungen</h1>
+
+<div class="card">
+  <h2 style="margin-top:0">Team</h2>
+  {% if invite_link %}
+  <p class="error" style="color:var(--green)">Einladung erstellt. Link (einmalig,
+    72 h gültig):<br><code class="hash">{{ invite_link }}</code></p>
+  {% endif %}
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <table>
+    <thead><tr><th>E-Mail</th><th>Rolle</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for u in users %}
+      <tr><td>{{ u.email }}</td><td>{{ u.role }}</td>
+        <td>{{ 'aktiv' if u.is_active else 'inaktiv' }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if user.role == 'OWNER' %}
+  <h2>Nutzer einladen</h2>
+  <form method="post" action="/settings/invite">
+    <div class="row">
+      <div><label for="inv_email">E-Mail</label>
+        <input id="inv_email" name="email" type="email" required></div>
+      <div><label for="inv_role">Rolle</label>
+        <select id="inv_role" name="role">
+          <option value="MANAGER">Manager (darf erfassen)</option>
+          <option value="VIEWER">Leser (nur Ansicht)</option>
+        </select></div>
+    </div>
+    <div style="margin-top:0.75rem"><button type="submit">Einladen</button></div>
+  </form>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">SMS-Kontingent</h2>
+  <p class="muted">Monatliches SMS-Budget pro Betrieb. Bei Erschöpfung werden
+    nicht-kritische SMS unterdrückt; kritische § 21-Warnungen gehen immer raus.
+    E-Mails sind nie begrenzt.</p>
+  <p><strong>Aktuelles Limit:</strong> {{ sms_cap }} SMS / Monat
+    &nbsp;·&nbsp; <strong>diesen Monat gesendet:</strong> {{ sms_used }}</p>
+  <p class="muted">Änderungen des Limits erfolgen zentral über die
+    Systemkonfiguration (SMS_MONTHLY_CAP_PER_COMPANY).</p>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Datenschutz &amp; Recht</h2>
+  <p><a href="/impressum">Impressum</a> ·
+     <a href="/datenschutz">Datenschutzerklärung</a> ·
+     <a href="/avv">AVV (Auftragsverarbeitung)</a></p>
+  {% if user.role == 'OWNER' %}
+  <p><strong>Betroffenenrechte:</strong>
+     <a href="/export">Export JSON (Art. 15/20)</a> ·
+     <a href="/export.csv">Nachweise als CSV</a></p>
+  {% endif %}
+</div>
+
+{% if user.role == 'OWNER' %}
+<div class="card">
+  <h2 style="margin-top:0">Gefahrenzone</h2>
+  {% if deletion_requested %}
+    <p class="error">Löschung des Betriebskontos wurde beantragt. Die
+      vollständige Anonymisierung erfolgt nach Ablauf der 30-tägigen
+      Widerrufsfrist. Der fälschungssichere Nachweis (ohne Personenbezug)
+      bleibt erhalten.</p>
+  {% else %}
+    <p class="muted">Löschung des gesamten Betriebskontos beantragen. Nach 30
+      Tagen werden alle personenbezogenen Daten anonymisiert (Art. 17 DSGVO).</p>
+    <form method="post" action="/company/delete-request"
+          onsubmit="return confirm('Kontolöschung wirklich beantragen?');">
+      <button class="danger" type="submit">Kontolöschung beantragen</button>
+    </form>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

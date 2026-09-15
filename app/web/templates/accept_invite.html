@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Einladung annehmen — Fristenwächter{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="card">
+    <h1>Einladung annehmen</h1>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    {% if invalid %}
+      <p class="error">Diese Einladung ist ungültig oder abgelaufen.</p>
+      <p class="muted"><a href="/login">Zur Anmeldung</a></p>
+    {% else %}
+      <p class="muted">Legen Sie ein Passwort fest, um Ihr Konto ({{ email }})
+        zu aktivieren.</p>
+      <form method="post" action="/invite/accept">
+        <input type="hidden" name="token" value="{{ token }}">
+        <label for="password">Passwort (mind. 10 Zeichen)</label>
+        <input id="password" name="password" type="password" required minlength="10">
+        <div style="margin-top:1rem">
+          <button type="submit">Konto aktivieren</button>
+        </div>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+# Secrets — never commit
+.env
+.env.local
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Tooling caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+.claude/
+
+# Scratch duplicates of tracked sources (kept locally, not published)
+files/
+files.zip
+
+# Internal build/working docs (not published)
+CLAUDE_CODE_PROMPT.md
+BUILD_COMPLETE.md

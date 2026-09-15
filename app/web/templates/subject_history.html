@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Historie {{ subject_name }} — Fristenwächter{% endblock %}
+{% block content %}
+<p class="muted"><a href="/{{ 'drivers' if subject_type == 'driver' else 'vehicles' }}">
+  ← zurück</a></p>
+<h1>{{ subject_name }}</h1>
+
+{% if locked %}
+<div class="lock-banner">⚠ Gesperrt (§ 21 StVG). Eine bestandene
+  Führerscheinkontrolle hebt die Sperre auf.
+  <a href="/drivers/{{ subject_id }}/escalation" style="color:#fff;text-decoration:underline">
+    Vorgang</a></div>
+{% endif %}
+
+<div class="card">
+  <h2 style="margin-top:0">Prüfung erfassen</h2>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <form method="post" action="/{{ subject_type }}s/{{ subject_id }}/checks">
+    <div class="row">
+      {% if subject_type == 'driver' %}
+      <div>
+        <label for="result">Ergebnis der Führerscheinkontrolle</label>
+        <select id="result" name="result">
+          <option value="PASSED">Bestanden — Führerschein gültig vorgelegt</option>
+          <option value="FAILED">Fehlgeschlagen — sofort sperren</option>
+        </select>
+      </div>
+      <input type="hidden" name="kind" value="FSK">
+      {% else %}
+      <div>
+        <label for="kind">Prüfungsart</label>
+        <select id="kind" name="kind">
+          <option value="HU">Hauptuntersuchung (HU/AU)</option>
+          <option value="UVV">UVV-Prüfung</option>
+        </select>
+      </div>
+      <div>
+        <label for="result">Ergebnis</label>
+        <select id="result" name="result">
+          <option value="PASSED">Bestanden</option>
+          <option value="FAILED_DEFECTS">Erhebliche Mängel (Nachprüfung)</option>
+        </select>
+      </div>
+      {% endif %}
+      <div>
+        <label for="performed_on">Durchgeführt am</label>
+        <input id="performed_on" name="performed_on" type="date"
+               value="{{ today }}" required>
+      </div>
+    </div>
+    <div style="margin-top:0.75rem"><button type="submit">Erfassen</button></div>
+  </form>
+</div>
+
+<h2>Nachweis-Kette (fälschungssicher)</h2>
+{% if entries %}
+<ul class="timeline">
+  {% for e in entries %}
+  <li>
+    <strong>{{ e.kind }} — {{ e.result }}</strong>
+    <span class="muted">· {{ e.performed_on }}
+      {% if e.method %}· {{ e.method }}{% endif %}</span>
+    <div class="hash">Hash: {{ e.entry_hash }}</div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="card empty">Noch keine Prüfungen erfasst.</div>
+{% endif %}
+{% endblock %}

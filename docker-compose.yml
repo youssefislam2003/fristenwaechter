@@ -1,0 +1,87 @@
+# Fristenwächter — local/prod-shaped stack. One image, three runtime shapes:
+# a one-shot migrator, the web app (app_user), and the worker (app_jobs).
+#
+# The DB port is bound to 127.0.0.1 ONLY — never exposed on a public interface.
+# Copy .env.example → .env and set real secrets before `docker compose up`.
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fristen
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    ports:
+      - "127.0.0.1:5432:5432"   # localhost-only; not reachable off-box
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fristen"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    build: .
+    command: >-
+      sh -c "python scripts/bootstrap_db.py && alembic upgrade head"
+    environment:
+      SUPERUSER_DATABASE_URL: postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/fristen
+      ALEMBIC_DATABASE_URL: postgresql+asyncpg://migration_admin:${MIGRATION_ADMIN_PASSWORD:-migadmin}@db:5432/fristen
+      MIGRATION_ADMIN_PASSWORD: ${MIGRATION_ADMIN_PASSWORD:-migadmin}
+      APP_USER_PASSWORD: ${APP_USER_PASSWORD:-appuser}
+      APP_JOBS_PASSWORD: ${APP_JOBS_PASSWORD:-appjobs}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    build: .
+    restart: unless-stopped
+    command: >-
+      uvicorn app.main:app --host 0.0.0.0 --port 8000
+    environment:
+      DATABASE_URL: postgresql+asyncpg://app_user:${APP_USER_PASSWORD:-appuser}@db:5432/fristen
+      JOBS_DATABASE_URL: postgresql+asyncpg://app_jobs:${APP_JOBS_PASSWORD:-appjobs}@db:5432/fristen
+      BREVO_API_KEY: ${BREVO_API_KEY:-dummy}
+      SEVEN_IO_API_KEY: ${SEVEN_IO_API_KEY:-dummy}
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      BASE_URL: ${BASE_URL:-http://localhost:8000}
+    ports:
+      - "8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/healthz').status==200 else 1)\""]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  worker:
+    build: .
+    restart: unless-stopped
+    command: >-
+      python -m app.worker
+    environment:
+      DATABASE_URL: postgresql+asyncpg://app_user:${APP_USER_PASSWORD:-appuser}@db:5432/fristen
+      JOBS_DATABASE_URL: postgresql+asyncpg://app_jobs:${APP_JOBS_PASSWORD:-appjobs}@db:5432/fristen
+      BREVO_API_KEY: ${BREVO_API_KEY:-dummy}
+      SEVEN_IO_API_KEY: ${SEVEN_IO_API_KEY:-dummy}
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      HEARTBEAT_URL: ${HEARTBEAT_URL:-}
+      WORKER_HEARTBEAT_FILE: /tmp/fristen-worker.alive
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "scripts/worker_healthcheck.py"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  pgdata:

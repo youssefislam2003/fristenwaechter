@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Fahrer — Fristenwächter{% endblock %}
+{% block content %}
+<h1>Fahrer</h1>
+
+<div class="card">
+  <h2 style="margin-top:0">Fahrer hinzufügen</h2>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <p class="muted">Es werden keine Führerscheinnummern, Scans oder Geburtsdaten
+    gespeichert — nur der Nachweis, wer wann kontrolliert wurde.</p>
+  <form method="post" action="/drivers">
+    <div class="row">
+      <div><label for="first_name">Vorname</label>
+        <input id="first_name" name="first_name" required></div>
+      <div><label for="last_name">Nachname</label>
+        <input id="last_name" name="last_name" required></div>
+      <div><label for="employment_start">Beschäftigt seit</label>
+        <input id="employment_start" name="employment_start" type="date"></div>
+    </div>
+    <div style="margin-top:0.75rem">
+      <button type="submit">Anlegen (Führerscheinkontrolle wird geplant)</button>
+    </div>
+  </form>
+</div>
+
+{% if drivers %}
+<div class="card" style="padding:0">
+  <table>
+    <thead><tr><th>Name</th><th>Status</th><th>Nächste FSK</th><th></th></tr></thead>
+    <tbody>
+    {% for d in drivers %}
+      <tr class="tl {{ 'tl-red' if not d.is_authorized_to_drive else '' }}">
+        <td><strong>{{ d.first_name }} {{ d.last_name }}</strong></td>
+        <td>
+          {% if d.is_authorized_to_drive %}
+            <span class="badge badge-green">fahrberechtigt</span>
+          {% else %}
+            <span class="badge badge-red">GESPERRT</span>
+          {% endif %}
+        </td>
+        <td>{{ d.fsk_due or '—' }}</td>
+        <td>
+          <a href="/drivers/{{ d.id }}/history">Historie</a>
+          {% if not d.is_authorized_to_drive %}
+            · <a href="/drivers/{{ d.id }}/escalation">Vorgang</a>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty">Noch keine Fahrer. Legen Sie oben Ihren ersten an.</div>
+{% endif %}
+{% endblock %}

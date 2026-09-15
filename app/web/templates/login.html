@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Anmelden — Fristenwächter{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="card">
+    <h1>Anmelden</h1>
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+    <form method="post" action="/login">
+      <label for="email">E-Mail</label>
+      <input id="email" name="email" type="email" required autofocus
+             value="{{ email or '' }}">
+      <label for="password">Passwort</label>
+      <input id="password" name="password" type="password" required>
+      <div style="margin-top:1rem">
+        <button type="submit">Anmelden</button>
+      </div>
+    </form>
+    <p class="muted" style="margin-top:1rem">
+      Noch kein Konto? <a href="/signup">Betrieb registrieren</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

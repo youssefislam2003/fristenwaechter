@@ -1,0 +1,25 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [".venv", "migrations/versions"]
+
+[tool.ruff.lint]
+# Defaults (E, F) plus import-sorting (I), bugbear (B), pyupgrade (UP).
+select = ["E", "F", "I", "B", "UP", "W"]
+ignore = [
+    "E501",  # line length is enforced by formatter judgment, not hard-failed
+    "B008",  # FastAPI's Depends(...) in defaults is the framework idiom
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = []
+# Third-party libs without complete stubs — don't fail strict on their absence.
+[[tool.mypy.overrides]]
+module = [
+    "apscheduler.*",
+    "argon2.*",
+    "testcontainers.*",
+]
+ignore_missing_imports = true

@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fristenwächter — Prüfprotokoll · Compliance Engine for German Fleets</title>
+<style>
+  /* ————— Design tokens · "Prüfprotokoll" —————
+     plate    #F4F5F1  document/plate white
+     ink      #17181A  near-black ink
+     blau     #004E8F  German traffic-sign blue (RAL 5017)
+     amber    #F5A800  warning amber (RAL 1003)
+     rot      #B01E12  signal red (RAL 3020) — §21 only
+     gruen    #1E7A3C  stamp green
+     paper    #E9EAE5  form-field gray
+     Zero external requests: system fonts only, by design. */
+  :root{
+    --plate:#F4F5F1; --ink:#17181A; --blau:#004E8F; --amber:#F5A800;
+    --rot:#B01E12; --gruen:#1E7A3C; --paper:#E9EAE5; --rule:#C9CBC4;
+    --disp:'Arial Narrow','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --body:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,'SF Mono','Cascadia Mono','Consolas',monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}
+    *,*::before,*::after{animation:none!important;transition:none!important}}
+  body{background:var(--plate);color:var(--ink);font:16px/1.6 var(--body)}
+  .sheet{max-width:920px;margin:0 auto;padding:0 24px}
+
+  /* display type = road-sign condensed caps */
+  h1,h2,.disp{font-family:var(--disp);text-transform:uppercase;
+    letter-spacing:.04em;font-weight:700;line-height:1.05}
+
+  /* ————— Kennzeichen (license-plate) label ————— */
+  .kz{display:inline-flex;align-items:stretch;border:3px solid var(--ink);
+    border-radius:8px;background:#fff;overflow:hidden;
+    font-family:var(--disp);font-weight:700;letter-spacing:.06em;
+    box-shadow:2px 3px 0 rgba(23,24,26,.18)}
+  .kz .eu{background:var(--blau);color:#fff;display:flex;flex-direction:column;
+    align-items:center;justify-content:flex-end;padding:4px 6px 3px;
+    font-size:.55em;line-height:1}
+  .kz .eu::before{content:"★";display:block;font-size:1.5em;margin-bottom:2px;color:#FFCC00}
+  .kz .num{padding:.18em .5em .12em;font-size:1.6em;color:var(--ink)}
+
+  /* ————— HU-Plakette (the signature) ————— */
+  .plakette{filter:drop-shadow(0 4px 10px rgba(0,78,143,.35))}
+
+  /* ————— Rubber stamps ————— */
+  .stamp{display:inline-block;font-family:var(--disp);font-weight:700;
+    text-transform:uppercase;letter-spacing:.12em;font-size:.72rem;
+    padding:.22em .6em;border:2.5px solid currentColor;border-radius:4px;
+    transform:rotate(-4deg);opacity:.92;white-space:nowrap}
+  .stamp.ok{color:var(--gruen)} .stamp.open{color:var(--amber);transform:rotate(3deg)}
+  .stamp.crit{color:var(--rot)}
+
+  /* ————— Header / hero ————— */
+  header{border-bottom:4px solid var(--ink);background:
+    repeating-linear-gradient(-45deg,transparent 0 26px,rgba(0,78,143,.045) 26px 52px)}
+  .hero{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center;
+    padding:56px 0 40px}
+  .hero h1{font-size:clamp(2.4rem,6vw,4.2rem)}
+  .hero h1 .thin{color:var(--blau)}
+  .lede{max-width:34em;margin-top:14px;font-size:1.05rem}
+  .lede strong{color:var(--rot)}
+  .protocol-meta{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .meta-chip{font-family:var(--mono);font-size:.72rem;border:1px solid var(--ink);
+    padding:.3em .6em;background:#fff}
+  .facts{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:0 0 -3px;
+    border:3px solid var(--ink);border-bottom:none;background:#fff}
+  .facts div{padding:16px 18px;border-right:3px solid var(--ink)}
+  .facts div:last-child{border-right:none}
+  .facts b{display:block;font-family:var(--disp);font-size:1.7rem;line-height:1;
+    text-transform:uppercase}
+  .facts span{font-size:.78rem;color:#4a4c50}
+  .facts .b-blau b{color:var(--blau)} .facts .b-rot b{color:var(--rot)}
+
+  /* ————— Prüfpunkt sections ————— */
+  section{padding:52px 0 8px;border-bottom:1px solid var(--rule)}
+  .pp-head{display:flex;align-items:center;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  .pp-head h2{font-size:clamp(1.5rem,3.4vw,2.1rem)}
+  .pp-head .kz .num{font-size:1.15em}
+  p.copy{max-width:44em;margin:0 0 16px;color:#2c2d30}
+
+  /* form-style tables */
+  table{width:100%;border-collapse:collapse;background:#fff;margin:18px 0;
+    border:2px solid var(--ink);font-size:.92rem}
+  th{font-family:var(--disp);text-transform:uppercase;letter-spacing:.06em;
+    text-align:left;background:var(--paper);border-bottom:2px solid var(--ink);
+    padding:9px 12px;font-size:.8rem}
+  td{padding:10px 12px;border-bottom:1px solid var(--rule);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  td.mono,code{font-family:var(--mono);font-size:.83em;background:var(--paper);
+    padding:.08em .35em;border-radius:3px}
+  td.mono{background:transparent;padding:10px 12px}
+
+  /* pipeline (E6) */
+  .flow{list-style:none;counter-reset:step;margin:24px 0;border-left:3px solid var(--blau)}
+  .flow li{counter-increment:step;position:relative;padding:0 0 26px 56px}
+  .flow li::before{content:counter(step);position:absolute;left:-19px;top:-2px;
+    width:35px;height:35px;border-radius:50%;background:var(--plate);
+    border:3px solid var(--blau);color:var(--blau);font-family:var(--disp);
+    font-weight:700;display:flex;align-items:center;justify-content:center}
+  .flow li.crit::before{border-color:var(--rot);color:var(--rot)}
+  .flow b{font-family:var(--disp);text-transform:uppercase;letter-spacing:.05em;
+    display:block;margin-bottom:2px}
+  .flow small{color:#4a4c50;max-width:40em;display:block}
+  .tx-bracket{font-family:var(--mono);font-size:.7rem;color:var(--blau);
+    letter-spacing:.15em;text-transform:uppercase;margin:0 0 6px 56px}
+
+  /* architecture diagram */
+  .arch{background:var(--ink);color:#E7E8E4;border:2px solid var(--ink);
+    padding:22px 20px;overflow-x:auto;margin:18px 0}
+  .arch pre{font-family:var(--mono);font-size:.78rem;line-height:1.5;white-space:pre}
+  .arch .hl{color:var(--amber)} .arch .bl{color:#6FB1E8} .arch .rd{color:#FF7B6E}
+
+  /* status board */
+  .board{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}
+  .card{background:#fff;border:2px solid var(--ink);padding:18px}
+  .card h3{font-family:var(--disp);text-transform:uppercase;letter-spacing:.05em;
+    display:flex;justify-content:space-between;align-items:center;gap:8px;
+    margin-bottom:12px;font-size:1.05rem}
+  .card ul{list-style:none}
+  .card li{padding:6px 0 6px 22px;position:relative;border-bottom:1px dashed var(--rule);
+    font-size:.9rem}
+  .card li:last-child{border-bottom:none}
+  .card.done li::before{content:"✓";position:absolute;left:0;color:var(--gruen);font-weight:700}
+  .card.todo li::before{content:"○";position:absolute;left:0;color:var(--amber);font-weight:700}
+
+  .callout{border:2px solid var(--rot);background:#fff;padding:16px 18px;margin:20px 0;
+    max-width:46em}
+  .callout .stamp{float:right;margin-left:12px}
+
+  footer{padding:34px 0 60px;font-size:.8rem;color:#4a4c50}
+  footer .kz{transform:scale(.8);transform-origin:left}
+  @media(max-width:720px){
+    .hero{grid-template-columns:1fr;padding-top:40px}
+    .hero svg{width:120px;height:120px;order:-1}
+    .facts{grid-template-columns:1fr}
+    .facts div{border-right:none;border-bottom:3px solid var(--ink)}
+    .facts div:last-child{border-bottom:none}
+    .board{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="sheet">
+    <div class="hero">
+      <div>
+        <div class="kz" aria-label="Kennzeichen F-W 2026"><span class="eu">D</span><span class="num">F–W 2026</span></div>
+        <h1 style="margin-top:18px">Fristen<span class="thin">wächter</span></h1>
+        <p class="lede">A compliance engine for German commercial fleets. It tracks
+          <strong style="color:var(--blau)">HU/AU</strong>, <strong style="color:var(--blau)">UVV</strong> and
+          <strong style="color:var(--blau)">Führerscheinkontrolle</strong> deadlines — and when a license check fails,
+          it locks the driver and alerts the owner with <strong>guaranteed delivery</strong>,
+          because letting that person drive is a criminal offense for the Geschäftsführer
+          (§ 21 Abs. 1 Nr. 2 StVG, Halterhaftung).</p>
+        <div class="protocol-meta">
+          <span class="meta-chip">PRÜFPROTOKOLL · STAND 07/2026</span>
+          <span class="meta-chip">STANDORT: BERLIN</span>
+          <span class="meta-chip">HOSTING: HETZNER (DE)</span>
+        </div>
+      </div>
+      <!-- Signature: HU-Plakette -->
+      <svg class="plakette" width="170" height="170" viewBox="0 0 170 170" role="img" aria-label="HU-Plakette, month 7 at top">
+        <circle cx="85" cy="85" r="82" fill="#004E8F"/>
+        <circle cx="85" cy="85" r="82" fill="none" stroke="#17181A" stroke-width="3"/>
+        <circle cx="85" cy="85" r="52" fill="none" stroke="#F4F5F1" stroke-width="2"/>
+        <!-- months, 7 rotated to 12 o'clock -->
+        <g fill="#F4F5F1" font-family="Arial Narrow, Arial" font-size="15" font-weight="700" text-anchor="middle">
+          <text x="85"  y="26">7</text><text x="119" y="36">8</text><text x="141" y="61">9</text>
+          <text x="150" y="91">10</text><text x="141" y="120">11</text><text x="119" y="142">12</text>
+          <text x="85"  y="152">1</text><text x="51" y="142">2</text><text x="29" y="120">3</text>
+          <text x="21"  y="91">4</text><text x="29" y="61">5</text><text x="51" y="36">6</text>
+        </g>
+        <g fill="#F4F5F1" text-anchor="middle" font-family="Arial Narrow, Arial">
+          <text x="85" y="80" font-size="30" font-weight="700">26</text>
+          <text x="85" y="100" font-size="9" letter-spacing="2">FRISTENWÄCHTER</text>
+        </g>
+        <path d="M85 10 l6 12 h-12 z" fill="#F5A800"/>
+      </svg>
+    </div>
+    <div class="facts">
+      <div class="b-rot"><b>7 Tage</b><span>hard escalation window after a failed license check — tracked to the end of the 7th Berlin calendar day</span></div>
+      <div class="b-blau"><b>0 Scans</b><span>no license copies, no license numbers — the schema has no column where they could exist</span></div>
+      <div><b>~€25/Mon.</b><span>full production infrastructure: Hetzner VPS + backups + EU email/SMS providers</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="sheet">
+
+<section id="problem">
+  <div class="pp-head"><span class="kz"><span class="eu">D</span><span class="num">PP·1</span></span><h2>The problem being solved</h2></div>
+  <p class="copy">Every German company vehicle owner (Halter) is personally responsible for three
+  recurring legal obligations. Missing them isn't an admin inconvenience — it's fines,
+  voided insurance, and in the license case, criminal exposure for whoever runs the company.</p>
+  <table>
+    <tr><th style="width:26%">Obligation</th><th>Legal basis</th><th>Cadence</th><th>Consequence if missed</th></tr>
+    <tr><td><b>HU/AU</b> (TÜV)</td><td class="mono">§ 29 StVZO</td><td>24 mo (first PKW: 36 mo) — month-granular Plakette</td><td>Fines, insurance disputes after accidents, vehicle inspection orders</td></tr>
+    <tr><td><b>UVV-Prüfung</b></td><td class="mono">DGUV V70 § 57</td><td>at least every 12 mo per vehicle/machine</td><td>Berufsgenossenschaft liability, voided coverage on workplace accidents</td></tr>
+    <tr><td><b>Führerscheinkontrolle</b></td><td class="mono">§ 21 StVG</td><td>best practice: every 6 mo per driver</td><td style="color:var(--rot)"><b>Criminal liability of the Geschäftsführer</b> if an unlicensed employee drives</td></tr>
+  </table>
+  <p class="copy">Target customer: <b>Handwerksbetriebe and small fleets, 5–50 vehicles</b> — companies
+  with real exposure and no fleet department. Today they track this in a wall calendar, if at all.</p>
+</section>
+
+<section id="scope">
+  <div class="pp-head"><span class="kz"><span class="eu">D</span><span class="num">PP·2</span></span><h2>Product scope &amp; positioning</h2></div>
+  <p class="copy">A deliberately narrow B2B SaaS: deadline tracking, attested check logging,
+  automated reminders (90/30/7/0 days, e-mail + SMS), and one exceptional flow — the hard escalation
+  when a license check fails. Two commitments define the product against every competitor:</p>
+  <table>
+    <tr><th style="width:30%">Commitment</th><th>What it means in practice</th></tr>
+    <tr><td><b>Keine Führerscheinkopien</b></td><td>We never store scans or license numbers. We store the legally useful artifact instead: a tamper-evident log of <i>who checked whom, when, how, result</i>. This makes us a clean Art.&nbsp;28 DSGVO Auftragsverarbeiter, keeps the product cookie-banner-free, and is a marketing weapon with privacy-sensitive German SMEs.</td></tr>
+    <tr><td><b>Zustellgarantie</b></td><td>The § 21 StVG alert cannot be silently lost — not by a crash, a mail-server outage, or a deploy. Architecture, not best effort (see PP·4).</td></tr>
+  </table>
+</section>
+
+<section id="arch">
+  <div class="pp-head"><span class="kz"><span class="eu">D</span><span class="num">PP·3</span></span><h2>System architecture</h2></div>
+  <p class="copy">Boring on purpose: one encrypted German VPS, one PostgreSQL, two processes from one image.
+  Python 3.11 · FastAPI · SQLAlchemy 2.0 async · APScheduler. No queues, no Kubernetes — the workload is
+  hundreds of events per day, and every moving part removed is an outage that can't happen.</p>
+  <div class="arch"><pre>
+┌─ Hetzner VPS · Falkenstein (DE) · LUKS-encrypted ────────────────────────┐
+│                                                                          │
+│  Browser ──TLS──▶ Caddy ──▶ <span class="bl">web</span> (FastAPI · role: app_user · RLS)         │
+│                               │  one atomic transaction, no network I/O  │
+│                               ▼                                          │
+│                        PostgreSQL 16  ◀── evidence tables are            │
+│                               ▲           <span class="hl">append-only by trigger</span>         │
+│                               │                                          │
+│  <span class="bl">worker</span> (role: app_jobs) ────┘                                          │
+│    every 15 s  outbox relay ──▶ Brevo (EU e-mail) · seven.io (DE SMS)    │
+│    daily 06:00 escalation + reminder sweeps      <span class="rd">dead-man heartbeat ▶</span>   │
+│    nightly     DSGVO purge · encrypted restic backup ▶ Storage Box       │
+└──────────────────────────────────────────────────────────────────────────┘
+  </pre></div>
+  <p class="copy">Dual database roles: <code>migration_admin</code> owns the schema; the runtime roles hold
+  explicit per-table grants only — <b>no DELETE, no TRUNCATE, no DDL anywhere</b>. Row-level security
+  isolates tenants below the application layer.</p>
+</section>
+
+<section id="e6">
+  <div class="pp-head"><span class="kz"><span class="eu">D</span><span class="num">PP·4</span></span><h2>The critical path: a failed license check</h2></div>
+  <p class="copy">Employee cannot present a valid license at the biannual check. From this moment,
+  letting them drive is a crime the owner commits. The system's response, end to end:</p>
+  <div class="tx-bracket">┌── one database transaction · zero network i/o ──┐</div>
+  <ol class="flow">
+    <li class="crit"><b>Hard lock</b><small>Driver is flagged <code>not authorized to drive</code> — guarded by optimistic version locking, so racing writes fail loudly (HTTP 409) instead of silently.</small></li>
+    <li><b>Evidence appended</b><small>The failed check joins the driver's SHA-256 hash chain. The row can never be edited or deleted — a database trigger forbids it, and the app role holds no such privilege anyway.</small></li>
+    <li><b>Escalation case opened</b><small>Deadline: end of the 7th Berlin calendar day. A partial unique index makes a duplicate open case a database impossibility.</small></li>
+    <li><b>Alert intent committed</b><small>CRITICAL e-mail + SMS to every owner/manager written to a transactional outbox — the intent to notify is exactly as durable as the lock itself.</small></li>
+  </ol>
+  <div class="tx-bracket" style="margin-top:-8px">└── commit — all four effects, or none ──┘</div>
+  <ol class="flow" style="border-left-color:var(--amber)">
+    <li style="counter-increment:step 4"><b>Relay delivers</b><small>Every 15 s: claim via <code>FOR UPDATE SKIP LOCKED</code> (critical first), send, retry on 0s→1m→5m→30m→2h backoff. Exhausted retries dead-letter and page the operator — an undeliverable § 21 alert is treated as an incident, not a log line.</small></li>
+    <li><b>Daily pressure, then breach</b><small>Open cases nag the owner every morning at 06:00 Berlin. Past the deadline: status BREACHED, strongest wording.</small></li>
+    <li><b>Resolution</b><small>A passed re-check unlocks the driver and closes the case — logged in the same immutable chain, which is precisely the evidence a Geschäftsführer shows if the Staatsanwaltschaft ever asks.</small></li>
+  </ol>
+</section>
+
+<section id="guarantees">
+  <div class="pp-head"><span class="kz"><span class="eu">D</span><span class="num">PP·5</span></span><h2>Engineering guarantees</h2></div>
+  <table>
+    <tr><th style="width:4%">#</th><th style="width:32%">Guarantee</th><th>Mechanism</th><th style="width:14%">Status</th></tr>
+    <tr><td class="mono">G1</td><td>History cannot be rewritten</td><td>Hash-chained log + append-only DB trigger + no UPDATE/DELETE grants — two independent locks on the same door</td><td><span class="stamp ok">Codiert</span></td></tr>
+    <tr><td class="mono">G2</td><td>Lock and alert are atomic</td><td>Single transaction; transactional-outbox pattern; savepoint-wrapped idempotent replay under races</td><td><span class="stamp ok">Codiert</span></td></tr>
+    <tr><td class="mono">G3</td><td>Critical alerts survive crashes</td><td>At-least-once relay, SKIP LOCKED, backoff, dead-letter escalation, dead-man heartbeat monitoring relay <i>silence</i></td><td><span class="stamp ok">Codiert</span></td></tr>
+    <tr><td class="mono">G4</td><td>Legal dates are Berlin-correct</td><td>Instant/obligation type split; clamping month math (31.08.+6&nbsp;Mo → 29.02. in leap years); DST-proof 7-day window</td><td><span class="stamp ok">Verifiziert</span></td></tr>
+  </table>
+  <p class="copy" style="font-size:.85rem;color:#4a4c50">G4's assertions have been executed and pass. G1–G3 are implemented
+  and covered by an integration suite against real PostgreSQL 16 (concurrency races, lock-skipping,
+  privilege boundaries) that awaits its first local run — see PP·8.</p>
+</section>
+
+<section id="dsgvo">
+  <div class="pp-head"><span class="kz"><span class="eu">D</span><span class="num">PP·6</span></span><h2>DSGVO posture</h2></div>
+  <table>
+    <tr><th style="width:30%">Aspect</th><th>Position</th></tr>
+    <tr><td>Roles</td><td>Customer = Verantwortlicher for driver data; we = Auftragsverarbeiter (Art. 28). The AVV we offer at signup is a sales feature, not paperwork — without it the customer is himself non-compliant.</td></tr>
+    <tr><td>Data minimization</td><td>Driver record = name, contact, license classes, check history. Nothing else <i>can</i> be stored: the API rejects unknown fields, the schema has no columns for them.</td></tr>
+    <tr><td>Erasure vs. evidence</td><td>Art. 17 anonymizes the person; the check chain references only an internal ID plus PII-free booleans, so the customer's liability evidence survives erasure intact. That is the design's central trick.</td></tr>
+    <tr><td>Subprocessors</td><td>Hetzner (DE) · Brevo (EU) · seven.io (DE). All-EU: no Schrems-II discussion, ever. No Google Fonts, no third-party assets — this very document loads zero external resources.</td></tr>
+    <tr><td>Retention</td><td>Configurable per customer (default 36 months after employment end), executed by a nightly purge job — a policy that runs itself.</td></tr>
+  </table>
+</section>
+
+<section id="stack">
+  <div class="pp-head"><span class="kz"><span class="eu">D</span><span class="num">PP·7</span></span><h2>Stack &amp; running costs</h2></div>
+  <table>
+    <tr><th>Layer</th><th>Choice</th><th style="width:16%">€ / month</th></tr>
+    <tr><td>Compute + DB</td><td>Hetzner CX22 (DE), Docker Compose: db · web · worker</td><td class="mono">3.79</td></tr>
+    <tr><td>Backups</td><td>Hetzner Storage Box + restic (client-side encrypted), monthly restore drill</td><td class="mono">3.20</td></tr>
+    <tr><td>E-mail / SMS</td><td>Brevo free tier · seven.io prepaid (~0.075 €/SMS, per-tenant cap)</td><td class="mono">~10</td></tr>
+    <tr><td>TLS / proxy / monitoring</td><td>Caddy · Healthchecks dead-man switch · GlitchTip</td><td class="mono">0–5</td></tr>
+    <tr><td>Domain</td><td>.de + mailbox</td><td class="mono">~3</td></tr>
+    <tr><td colspan="2"><b>Total — against a €100 budget</b></td><td class="mono"><b>~25</b></td></tr>
+  </table>
+</section>
+
+<section id="status">
+  <div class="pp-head"><span class="kz"><span class="eu">D</span><span class="num">PP·8</span></span><h2>Build status &amp; next steps</h2></div>
+  <div class="board">
+    <div class="card done">
+      <h3>Built <span class="stamp ok">Bestanden</span></h3>
+      <ul>
+        <li>Date engine (verified: leap days, DST, clamping)</li>
+        <li>Data model incl. optimistic locking &amp; delivery FSM</li>
+        <li>Atomic E6 pipeline with savepoint-safe idempotency</li>
+        <li>Outbox relay: SKIP LOCKED · backoff · dead-letter</li>
+        <li>Migration: schema, triggers, dual-role grant matrix</li>
+        <li>Integration suite (real Postgres, 10 scenarios)</li>
+      </ul>
+    </div>
+    <div class="card todo">
+      <h3>Open <span class="stamp open">Ausstehend</span></h3>
+      <ul>
+        <li>First green run of the integration suite (Docker, ~30 min)</li>
+        <li>App boot layer: entrypoints, settings, auth, tenancy/RLS wiring</li>
+        <li>Brevo / seven.io notifier implementations</li>
+        <li>Reminder + escalation sweeps, HTMX dashboard</li>
+        <li>DSGVO purge job &amp; export endpoints, Compose/CI</li>
+        <li>Lawyer review: AVV, alert wording, ToS, retention defaults</li>
+      </ul>
+    </div>
+  </div>
+  <p class="copy">The open items are specified task-by-task in <code>CLAUDE_CODE_PROMPT.md</code>,
+  with the codebase's invariants stated as hard constraints — hand it to Claude Code in the repository
+  root and start with task T0 (make the test suite green).</p>
+  <div class="callout"><span class="stamp crit">Hinweis</span>
+    <b>Not legal advice.</b> The legal rules here are encoded as engineering constraints.
+    Before charging customers: German lawyer review (Verkehrsrecht + Datenschutz),
+    Gewerbeanmeldung, and a conversation with a Steuerberater.</div>
+</section>
+
+</main>
+
+<footer>
+  <div class="sheet">
+    <div class="kz"><span class="eu">D</span><span class="num">F–W 2026</span></div>
+    <p style="margin-top:10px">Fristenwächter · Prüfprotokoll edition · Berlin, July 2026.
+    This document is a single self-contained file: no external fonts, scripts, trackers, or requests —
+    the same posture as the product it describes.</p>
+  </div>
+</footer>
+
+</body>
+</html>

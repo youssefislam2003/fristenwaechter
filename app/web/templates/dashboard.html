@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Übersicht — Fristenwächter{% endblock %}
+{% block content %}
+<h1>Übersicht</h1>
+
+{% if locked %}
+<div class="lock-banner">
+  ⚠ {{ locked|length }} Fahrer gesperrt — § 21 Abs. 1 Nr. 2 StVG.
+  Ein Einsatz gesperrter Fahrer kann für den Halter strafbar sein.
+</div>
+{% for d in locked %}
+<div class="card tl tl-red">
+  <strong>{{ d.first_name }} {{ d.last_name }}</strong>
+  <span class="badge badge-red">GESPERRT</span>
+  <div class="muted">Grund: {{ d.lock_reason or '—' }}</div>
+  <a class="btn" style="margin-top:0.5rem" href="/drivers/{{ d.id }}/escalation">
+    Vorgang öffnen</a>
+</div>
+{% endfor %}
+{% endif %}
+
+<h2>Anstehende Fristen</h2>
+{% if rows %}
+<div class="card" style="padding:0">
+  <table>
+    <thead>
+      <tr><th>Betreff</th><th>Prüfung</th><th>Fällig</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for r in rows %}
+      <tr class="tl {{ r.tl_class }}">
+        <td>{{ r.name }}</td>
+        <td>{{ r.kind_label }}</td>
+        <td>{{ r.due }}</td>
+        <td><span class="badge {{ r.badge_class }}">{{ r.badge_text }}</span></td>
+        <td><a href="{{ r.link }}">Details</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty">
+  <p>Noch keine Fristen erfasst.</p>
+  <p><a class="btn" href="/vehicles">Erstes Fahrzeug anlegen</a>
+     &nbsp;<a class="btn secondary" href="/drivers">Ersten Fahrer anlegen</a></p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Fristenwächter{% endblock %}</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <script src="/static/htmx.min.js" defer></script>
+</head>
+<body>
+  {% if user %}
+  <header class="topbar">
+    <a class="brand" href="/dashboard">Fristenwächter</a>
+    <nav>
+      <a href="/dashboard">Übersicht</a>
+      <a href="/vehicles">Fahrzeuge</a>
+      <a href="/drivers">Fahrer</a>
+      <a href="/settings">Einstellungen</a>
+      <form method="post" action="/logout" style="display:inline">
+        <button class="secondary" type="submit">Abmelden</button>
+      </form>
+    </nav>
+  </header>
+  {% endif %}
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

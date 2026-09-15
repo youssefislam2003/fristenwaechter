@@ -1,0 +1,113 @@
+/* Fristenwächter — self-hosted styles. System font stack only: NO Google
+   Fonts, no @font-face to any origin (German courts have fined sites for
+   leaking visitor IPs to US font CDNs). CSP is default-src 'self'. */
+
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --ink: #1a2230;
+  --muted: #5b6b7e;
+  --line: #dce3ea;
+  --brand: #1f5fa8;
+  --brand-ink: #ffffff;
+  --red: #c0392b;
+  --red-bg: #fdecea;
+  --amber: #b8860b;
+  --amber-bg: #fdf6e3;
+  --green: #2e7d46;
+  --green-bg: #eaf6ee;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.5;
+}
+
+a { color: var(--brand); }
+
+header.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+}
+header.topbar .brand { font-weight: 700; color: var(--brand); text-decoration: none; }
+header.topbar nav a { margin-left: 1rem; text-decoration: none; color: var(--muted); }
+header.topbar nav a:hover { color: var(--ink); }
+
+main { max-width: 960px; margin: 1.5rem auto; padding: 0 1.25rem; }
+
+h1 { font-size: 1.45rem; margin: 0 0 1rem; }
+h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+/* traffic-light rows */
+.tl { border-left: 5px solid var(--line); }
+.tl-red { border-left-color: var(--red); background: var(--red-bg); }
+.tl-amber { border-left-color: var(--amber); background: var(--amber-bg); }
+.tl-green { border-left-color: var(--green); background: var(--green-bg); }
+
+.badge {
+  display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px;
+  font-size: 0.78rem; font-weight: 600;
+}
+.badge-red { background: var(--red); color: #fff; }
+.badge-amber { background: var(--amber); color: #fff; }
+.badge-green { background: var(--green); color: #fff; }
+
+.lock-banner {
+  background: var(--red); color: #fff; border-radius: var(--radius);
+  padding: 0.85rem 1rem; margin-bottom: 1rem; font-weight: 600;
+}
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+
+label { display: block; font-size: 0.85rem; color: var(--muted); margin: 0.6rem 0 0.2rem; }
+input, select {
+  width: 100%; padding: 0.5rem 0.6rem; border: 1px solid var(--line);
+  border-radius: 8px; font: inherit; background: #fff; color: var(--ink);
+}
+.row { display: flex; gap: 1rem; flex-wrap: wrap; }
+.row > div { flex: 1 1 200px; }
+
+button, .btn {
+  display: inline-block; padding: 0.55rem 1rem; border: 0; border-radius: 8px;
+  background: var(--brand); color: var(--brand-ink); font: inherit;
+  font-weight: 600; cursor: pointer; text-decoration: none;
+}
+button.secondary, .btn.secondary { background: #e8edf2; color: var(--ink); }
+button.danger { background: var(--red); }
+
+.muted { color: var(--muted); }
+.error { color: var(--red); font-size: 0.9rem; margin: 0.5rem 0; }
+.empty { text-align: center; color: var(--muted); padding: 2rem 1rem; }
+
+/* timeline */
+.timeline { list-style: none; padding: 0; margin: 0; }
+.timeline li {
+  padding: 0.6rem 0 0.6rem 1rem; border-left: 2px solid var(--line);
+  margin-left: 0.5rem;
+}
+.timeline .hash { font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: 0.72rem; color: var(--muted); word-break: break-all; }
+
+.auth-wrap { max-width: 420px; margin: 4rem auto; }

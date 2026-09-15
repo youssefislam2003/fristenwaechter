@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Sperrvorgang — Fristenwächter{% endblock %}
+{% block content %}
+<p class="muted"><a href="/drivers">← zurück zu Fahrern</a></p>
+<h1>Sperrvorgang — {{ driver.first_name }} {{ driver.last_name }}</h1>
+
+{% if case %}
+<div class="card {{ 'tl tl-red' if case.status == 'OPEN' else 'tl' }}">
+  <p><strong>Status:</strong>
+    <span class="badge {{ badge_class }}">{{ status_label }}</span></p>
+  <p><strong>Frist zur Klärung:</strong>
+    {{ case.deadline_at.astimezone(berlin).strftime('%d.%m.%Y %H:%M') }} Uhr</p>
+  {% if case.resolved_at %}
+  <p><strong>Erledigt am:</strong>
+    {{ case.resolved_at.astimezone(berlin).strftime('%d.%m.%Y %H:%M') }} Uhr</p>
+  {% endif %}
+  <p class="muted">Grundlage: § 21 Abs. 1 Nr. 2 StVG (Halterverantwortung).
+    Eine bestandene Führerscheinkontrolle hebt die Sperre auf und schließt den
+    Vorgang.</p>
+</div>
+
+{% if case.status == 'OPEN' %}
+<a class="btn" href="/drivers/{{ driver.id }}/history">
+  Bestandene Kontrolle erfassen → entsperren</a>
+{% endif %}
+{% else %}
+<div class="card">Kein Sperrvorgang für diesen Fahrer.</div>
+{% endif %}
+
+<h2>Zugehörige Meldungen</h2>
+{% if alerts %}
+<ul class="timeline">
+  {% for a in alerts %}
+  <li>
+    <span class="badge {{ 'badge-red' if a.severity == 'CRITICAL' else 'badge-amber' }}">
+      {{ a.severity }}</span>
+    {{ a.message }}
+    <div class="muted">{{ a.created_at.astimezone(berlin).strftime('%d.%m.%Y %H:%M') }}</div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">Keine Meldungen.</p>
+{% endif %}
+{% endblock %}

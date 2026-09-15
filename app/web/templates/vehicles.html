@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Fahrzeuge — Fristenwächter{% endblock %}
+{% block content %}
+<h1>Fahrzeuge</h1>
+
+<div class="card">
+  <h2 style="margin-top:0">Fahrzeug hinzufügen</h2>
+  {% if error %}<p class="error">{{ error }}</p>{% endif %}
+  <form method="post" action="/vehicles">
+    <div class="row">
+      <div>
+        <label for="kennzeichen">Kennzeichen</label>
+        <input id="kennzeichen" name="kennzeichen" placeholder="B-AB 1234" required>
+      </div>
+      <div>
+        <label for="first_registration">Erstzulassung</label>
+        <input id="first_registration" name="first_registration" type="date">
+      </div>
+    </div>
+    <div class="row">
+      <div><label for="make">Marke</label><input id="make" name="make"></div>
+      <div><label for="model">Modell</label><input id="model" name="model"></div>
+      <div>
+        <label for="hu_interval_months">HU-Intervall (Monate)</label>
+        <select id="hu_interval_months" name="hu_interval_months">
+          <option value="24">24 (PKW)</option>
+          <option value="12">12 (Nutzfahrzeug &gt; 3,5 t)</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:0.75rem">
+      <button type="submit">Anlegen (HU + UVV werden automatisch geplant)</button>
+    </div>
+  </form>
+</div>
+
+{% if vehicles %}
+<div class="card" style="padding:0">
+  <table>
+    <thead><tr><th>Kennzeichen</th><th>Fahrzeug</th><th>Nächste HU</th>
+      <th>Nächste UVV</th><th></th></tr></thead>
+    <tbody>
+    {% for v in vehicles %}
+      <tr>
+        <td><strong>{{ v.kennzeichen }}</strong></td>
+        <td>{{ v.make or '' }} {{ v.model or '' }}</td>
+        <td>{{ v.hu_due or '—' }}</td>
+        <td>{{ v.uvv_due or '—' }}</td>
+        <td><a href="/vehicles/{{ v.id }}/history">Historie</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card empty">Noch keine Fahrzeuge. Legen Sie oben Ihr erstes an.</div>
+{% endif %}
+{% endblock %}
